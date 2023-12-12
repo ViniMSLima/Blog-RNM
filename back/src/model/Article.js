@@ -35,7 +35,7 @@ const Article = mongoose.model(
     },
     ids: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "User",
       },
    ],

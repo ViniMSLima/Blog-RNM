@@ -87,6 +87,47 @@ class ArticleController {
         .send({ error: "Like failed", data: error.message });
     }
   }
+
+  static async dislikeArticle(req, res) {
+    const { articleId, userId } = req.body;
+
+    if (!articleId || !userId)
+      return res.status(400).send({ message: "Bad Request!" });
+    try {
+      const article = await Article.findById(articleId);
+      var updatedIds = [];
+      var check = 0;
+
+      if (!article.ids) {
+        article.ids = [];
+      }
+
+      article.ids.forEach((element) => {
+        if (element == userId) {
+          updatedIds = article.ids.filter((item) => item !== userId);
+          check++;
+        }
+         
+      });
+
+      if(check == 0)
+        return res.status(400).send({error: "Dislike failed!"});
+
+      await Article.findByIdAndUpdate(
+        { _id: articleId },
+        { $set: { ids: updatedIds }, likes: --article.likes },
+        { new: true }
+      );
+
+      return res.status(200).send({ message: "dislike!" });
+
+    } catch (error) {
+      ArticleController.createLog(error);
+      return res
+        .status(500)
+        .send({ error: "Like failed", data: error.message });
+    }
+  }
 }
 
 module.exports = ArticleController;
