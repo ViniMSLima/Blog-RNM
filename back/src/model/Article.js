@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const { authorSchema } = require("./author");
+const { commentSchema } = require("./Comment");
+
 const Article = mongoose.model(
   "Article",
   new mongoose.Schema({
@@ -39,6 +41,12 @@ const Article = mongoose.model(
         ref: "User",
       },
    ],
+   comments: [
+    {
+      type: commentSchema,
+      required: false,
+    },
+ ],
   })
 );
 

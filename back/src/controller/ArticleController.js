@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const AuthorController = require("../controller/AuthorController");
 const Article = require("../model/Article");
+const UserController = require("./UserController");
 
 class ArticleController {
   static createLog(error) {
@@ -126,6 +127,42 @@ class ArticleController {
       return res
         .status(500)
         .send({ error: "Like failed", data: error.message });
+    }
+  }
+
+  static async commentArticle(req, res) {
+    const { text, userId, articleId } = req.body;
+
+    if (!text || !userId || !articleId)
+      return res.status(400).send({ message: "Fields can't be empty" });
+    
+    try {
+      const user = await UserController.getUser(userId);
+      const comment = {
+        text,
+        likes: 0,
+        user,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        removedAt: null,
+        ids: [],
+      };
+
+      await Article.findByIdAndUpdate(
+        { _id: articleId },
+        { $addToSet: { comments: comment } },
+        { new: true }
+      );
+
+      return res
+        .status(200)
+        .send({ message: "comment sent"});
+      
+    } catch (error) {
+      ArticleController.createLog(error);
+      return res
+        .status(500)
+        .send({ error: "Fail saving article", data: error.message });
     }
   }
 }
