@@ -33,6 +33,13 @@ const Article = mongoose.model(
       type: Date,
       required: false,
     },
+    ids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+   ],
   })
 );
+
 module.exports = Article;
