@@ -7,5 +7,6 @@ route
     .post('/like/', ArticleController.likeArticle)
     .post('/dislike/', ArticleController.dislikeArticle)
     .post('/comment/', ArticleController.commentArticle)
+    .get('/', ArticleController.get)
 
 module.exports = route;

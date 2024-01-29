@@ -108,11 +108,11 @@ class ArticleController {
           updatedIds = article.ids.filter((item) => item !== userId);
           check++;
         }
-         
+
       });
 
-      if(check == 0)
-        return res.status(400).send({error: "Dislike failed!"});
+      if (check == 0)
+        return res.status(400).send({ error: "Dislike failed!" });
 
       await Article.findByIdAndUpdate(
         { _id: articleId },
@@ -135,7 +135,7 @@ class ArticleController {
 
     if (!text || !userId || !articleId)
       return res.status(400).send({ message: "Fields can't be empty" });
-    
+
     try {
       const user = await UserController.getUser(userId);
       const comment = {
@@ -156,14 +156,19 @@ class ArticleController {
 
       return res
         .status(200)
-        .send({ message: "comment sent"});
-      
+        .send({ message: "comment sent" });
+
     } catch (error) {
       ArticleController.createLog(error);
       return res
         .status(500)
         .send({ error: "Fail saving article", data: error.message });
     }
+  }
+
+  static async get(req, res) {
+    const articles = await Article.find();
+    return res.status(200).send(articles);
   }
 }
 
