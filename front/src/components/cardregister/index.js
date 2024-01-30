@@ -7,18 +7,47 @@ import {
 import axios from 'axios';
 import styles from './styles.module.scss';
 import { AlertContext } from "../../context/alert";
+import { SECRET } from "../../env";
+import CryptoJS from 'crypto-js';
 
 export default function CardRegister() {
     const { setMessage, setShow, setVariant } = useContext(AlertContext);
-    var [name, setName] = useState('');
-    var [email, setEmail] = useState('');
-    var [birth, setBirth] = useState(Date())
-    var [password, setPassword] = useState('');
-    var [confirmPass, setConfirmPass] = useState('');
-    function handleSubmit(e) {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [birth, setBirth] = useState(Date())
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    async function handleSubmit(e) {
         e.preventDefault();
         if (!formValid()) return
+
+        const json = {
+            name, email, birth, password, confirmPassword
+        }
+
+        const jsonCrypt = CryptoJS.AES.encrypt(JSON.stringify(json), SECRET).toString();
+        try {
+            var res = await axios.post('http://localhost:8080/api/author', {
+                jsonCrypt
+            })
+            setMessage(res.data.message);
+            setVariant('success')
+            setShow(true);
+            setName('');
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+        } catch (error) {
+            console.log(error);
+            setMessage(error.data);
+            setVariant('danger')
+            setShow(true);
+        }
     }
+
+
+
     function formValid() {
         if (!name.includes(' ')) {
             setMessage('Insira nome e sobrenome')
@@ -44,7 +73,7 @@ export default function CardRegister() {
             setVariant('danger')
             return false;
         }
-        if (confirmPass !== password) {
+        if (confirmPassword !== password) {
             setMessage('As senhas não conferem')
             setShow(true);
             setVariant('danger')
@@ -95,8 +124,8 @@ export default function CardRegister() {
                     <Form.Label>Confirme sua senha</Form.Label>
                     <Form.Control
                         type="password"
-                        value={confirmPass}
-                        onChange={(e) => setConfirmPass(e.target.value)}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     <Button
                         className={styles.card__form__button}

@@ -5,8 +5,11 @@ require("dotenv").config();
 const CryptoJS = require("crypto-js");
 
 class AuthControler {
-  static async register(req, res) 
-  {
+  static async register(req, res) {
+    var bytes = CryptoJS.AES.decrypt(req.body.jsonCrypt, process.env.SECRET);
+    const decryptd = bytes.toString(CryptoJS.enc.Utf8);
+    const json = JSON.parse(decryptd);
+
     const { name, birth, email, password, confirmPassword } = req.body;
 
     if (!name) return res.status(400).json({ message: "Name is mandatory" });
@@ -54,6 +57,46 @@ class AuthControler {
       return res
         .status(500)
         .send({ message: "Something failed", data: error.message });
+    }
+  }
+
+  static async login(req, res) {
+    var bytes = CryptoJS.AES.decrypt(req.body.jsonCrypt, process.env.SECRET);
+    const decryptd = bytes.toString(CryptoJS.enc.Utf8);
+    const json = JSON.parse(decryptd);
+    const { email, password } = json;
+
+    if (!email)
+      return res.status(422).json({ message: "O e-mail é obrigatório" });
+
+    if (!password)
+      return res.status(422).json({ message: "A senha é obrigatória" });
+    const user = await User.findOne({ email: email });
+
+    if (!user)
+      return res.status(422).json({ message: "Usuário e/ou senha inválido" });
+
+    var bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
+    const decryptd2 = bytes.toString(CryptoJS.enc.Utf8);
+    const json2 = JSON.parse(decryptd2);
+
+    if( json2 != password)
+      return res.status(422).send({ message: "senha invalida!!!!!!!!"})
+
+    try {
+      const secret = process.env.SECRET
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        secret,
+        {
+          expiresIn: '2 days'
+        }
+      );
+      return res.status(200).send({ token: token })
+    } catch (error) {
+      return res.status(500).send({ message: "Something failed", data: error.message })
     }
   }
 }

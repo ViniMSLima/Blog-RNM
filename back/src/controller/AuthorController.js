@@ -1,43 +1,65 @@
 const { Author } = require("../model/author");
-const User = require("../model/Login");
+const { User } = require("../model/Login");
+require("dotenv").config();
+const CryptoJS = require("crypto-js");
+
 class AuthorController {
-  static async create(req, res) {
-    const { name, email, birth } = req.body;
-    if (!name || !birth || !email)
-      return res
-        .status(400)
-        .send({ message: "os campos não podem estarem vazios " });
-    if (name.length < 3)
-      return res
-        .status(400)
-        .send({ message: "o nome não pode ser menor que 3 caracteres" });
-    if (email.length < 3)
-      return res.status(400).send({ message: "Insira um e-mail válido" });
-    if (!email.includes("@"))
-      return res.status(400).send({ message: "Insira um e-mail válido" });
-    const author = {
+  static async register(req, res) {
+    var bytes = CryptoJS.AES.decrypt(req.body.jsonCrypt, process.env.SECRET);
+    const decryptd = bytes.toString(CryptoJS.enc.Utf8);
+    const json = JSON.parse(decryptd);
+
+    const { name, birth, email, password, confirmPassword } = json;
+
+    if (!name) return res.status(400).json({ message: "Name is mandatory" });
+
+    if (!email) return res.status(400).json({ message: "E-mail is mandatory" });
+
+    if (!password)
+      return res.status(400).json({ message: "Password is mandatory" });
+
+    if (password != confirmPassword)
+      return res.status(400).json({ message: "Passwords doesn't match" });
+
+    const userExist = await User.findOne({ email: email });
+
+    if (userExist)
+      return res.status(422).json({ message: "E-mail already in use" });
+
+    const passwordCrypt = CryptoJS.AES.encrypt(
+      password,
+      process.env.SECRET
+    ).toString();
+
+    const author = new Author({
       name,
       email,
       birth,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       removedAt: null,
-    };
+    });
+    const user = new User({
+      login: email,
+      author,
+      email,
+      password: passwordCrypt,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      removedAt: null,
+    });
+
     try {
-      await Author.create(author);
-      return res.status(201).send({ message: "Autor cadastrado com sucesso" });
+      await User.create(user);
+      res.status(201).send({ message: "User registered successfully" });
     } catch (error) {
-      return res.status(500).send({ error: "Failed to get data" });
+      return res
+        .status(500)
+        .send({ message: "Something failed", data: error.message });
     }
   }
-  static async getAuthor(_id) {
-    try {
-      const author = await Author.findById(_id);
-      return author;
-    } catch (error) {
-      return res.status(404).send({ error: "Author not found!" });
-    }
-  }
+
+
 }
 
 module.exports = AuthorController;
