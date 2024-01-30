@@ -17,10 +17,26 @@ export default function Post() {
     }
 
     async function handleClick(id) {
-        await axios.post(`http://localhost:8080/api/article/like`, {
-            articleId: id,
-            userId: "65b7bbbd3deb3190b3ae76b6"
-        })
+        try {
+            const has = await axios.post(`http://localhost:8080/api/article/like`, {
+                articleId: id,
+                userId: "65b7bbbd3deb3190b3ae76b6",
+
+            })
+            if(has.data.message === "Can't like twice")
+            {
+                await axios.post(`http://localhost:8080/api/article/dislike`, {
+                    articleId: id,
+                    userId: "65b7bbbd3deb3190b3ae76b6",   
+                })
+            }
+
+        }
+
+        catch (error) {
+            console.log(error)
+        } 
+        
         getPosts();
     }
 

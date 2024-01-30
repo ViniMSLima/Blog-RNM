@@ -60,6 +60,16 @@ class ArticleController {
         article.ids = [];
       }
 
+      let liked = false;
+
+      article.ids.forEach(element => {
+        if(element == userId)
+          liked = true;
+      });
+    
+      if(liked)
+        return res.status(200).send({ message: "Can't like twice"})
+
       const likes = article.ids.length;
 
       await Article.findByIdAndUpdate(
