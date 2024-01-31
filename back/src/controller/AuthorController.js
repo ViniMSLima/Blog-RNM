@@ -58,8 +58,6 @@ class AuthorController {
         .send({ message: "Something failed", data: error.message });
     }
   }
-
-
 }
 
 module.exports = AuthorController;

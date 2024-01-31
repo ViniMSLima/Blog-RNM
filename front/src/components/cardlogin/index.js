@@ -22,7 +22,7 @@ export default function CardLogin() {
         }
         try {
             const jsonCrypt = CryptoJS.AES.encrypt(JSON.stringify(json), SECRET).toString();
-            var res = await axios.post('http://localhost:8080/api/login', {
+            var res = await axios.post('http://localhost:8080/api/auth/login', {
                 jsonCrypt
             })
             sessionStorage.setItem('token', res.data.token);
@@ -32,8 +32,6 @@ export default function CardLogin() {
             setShow(true);
             setVariant('danger');
         }
-
-        navigate('/home')
     }
 
     function formValid() {

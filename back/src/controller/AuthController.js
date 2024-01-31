@@ -64,12 +64,13 @@ class AuthControler {
     var bytes = CryptoJS.AES.decrypt(req.body.jsonCrypt, process.env.SECRET);
     const decryptd = bytes.toString(CryptoJS.enc.Utf8);
     const json = JSON.parse(decryptd);
-    const { email, password } = json;
+
+    const { email, pass } = json;
 
     if (!email)
       return res.status(422).json({ message: "O e-mail é obrigatório" });
 
-    if (!password)
+    if (!pass)
       return res.status(422).json({ message: "A senha é obrigatória" });
     const user = await User.findOne({ email: email });
 
@@ -78,9 +79,8 @@ class AuthControler {
 
     var bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
     const decryptd2 = bytes.toString(CryptoJS.enc.Utf8);
-    const json2 = JSON.parse(decryptd2);
 
-    if( json2 != password)
+    if(decryptd2 != pass)
       return res.status(422).send({ message: "senha invalida!!!!!!!!"})
 
     try {

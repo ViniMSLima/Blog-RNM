@@ -23,12 +23,12 @@ export default function CardRegister() {
         if (!formValid()) return
 
         const json = {
-            name, email, birth, password, confirmPassword
+            name, password, email, birth, confirmPassword
         }
 
         const jsonCrypt = CryptoJS.AES.encrypt(JSON.stringify(json), SECRET).toString();
         try {
-            var res = await axios.post('http://localhost:8080/api/author', {
+            var res = await axios.post('http://localhost:8080/api/author/register', {
                 jsonCrypt
             })
             setMessage(res.data.message);
